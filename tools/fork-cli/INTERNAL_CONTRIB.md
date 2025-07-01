@@ -17,13 +17,12 @@ Our fork maintains several important branches:
 
 - **`skyscanner-internal/develop/<release-tag>/<suffix>`**
   - Release-pinned development branches based on upstream tags
-  - Format: `skyscanner-internal/develop/vX.Y.Z/fix-<name>`
-  - Created by the **setup-fix** tool
+  - Format: `skyscanner-internal/develop/vX.Y.Z/fix-<name>` (vX.Y.Z is the upstream release tag that should exist)
+  - Created by the **setup-fix** tool (don't create these manually)
   - Contains our CI folder copied from `skyscanner-internal/master` and fork tooling
 
 - **`skyscanner-contrib/master`**
   - Mirror of `argoproj/argo-cd:master`
-  - Kept in sync via automation
   - Never push to this directly
 
 - **`skyscanner-contrib/proposal/<proposal-name>`**
