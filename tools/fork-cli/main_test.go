@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -19,7 +18,6 @@ type MockRunner struct {
 	exitCalls             []string
 	branchesExist         map[string]bool
 	tagsExist             map[string]bool
-	output                *bytes.Buffer
 	cmdIndex              int
 	hasUncommittedChanges bool
 	branchUpToDate        map[string]bool
@@ -39,7 +37,6 @@ func NewMockRunner(t *testing.T) *MockRunner {
 		expectedCmds:   []expectedCmd{},
 		branchesExist:  make(map[string]bool),
 		tagsExist:      make(map[string]bool),
-		output:         &bytes.Buffer{},
 		branchUpToDate: make(map[string]bool),
 	}
 }
@@ -154,7 +151,7 @@ func (m *MockRunner) HasUncommittedChanges() bool {
 func (m *MockRunner) IsBranchUpToDate(localBranch, remoteBranch string) bool {
 	upToDate, ok := m.branchUpToDate[localBranch]
 	if !ok {
-		m.t.Logf("Branch up-to-date check not mocked for: %s", localBranch)
+		m.t.Logf("Branch up-to-date check not mocked for local branch %s and remote branch %s", localBranch, remoteBranch)
 		return false
 	}
 	return upToDate
@@ -337,8 +334,8 @@ func TestSyncForkCmd(t *testing.T) {
 
 		// Set test environment
 		oldToken := os.Getenv("GITHUB_TOKEN")
-		os.Setenv("GITHUB_TOKEN", "test-token")
-		defer os.Setenv("GITHUB_TOKEN", oldToken)
+		t.Setenv("GITHUB_TOKEN", "test-token")
+		defer t.Setenv("GITHUB_TOKEN", oldToken)
 
 		// Run the command
 		exitCode := syncForkCmd([]string{}, mock)
