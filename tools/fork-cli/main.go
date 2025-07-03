@@ -272,7 +272,7 @@ func setupFixCmd(args []string, runner CommandRunner) int {
 	runner.RunOrExit("git", "commit", "-m", "chore: import CI and fork-cli tools into "+newBranch)
 
 	// 5) Push new branch
-	// runner.RunOrExit("git", "push", "-u", "origin", newBranch)
+	runner.RunOrExit("git", "push", "-u", "origin", newBranch)
 
 	fmt.Printf("✅ Created branch %s\n", newBranch)
 	return 0
