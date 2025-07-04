@@ -269,7 +269,7 @@ func TestPromoteFixCmd(t *testing.T) {
 
 		// Expected command sequence:
 		mock.ExpectCommand("git", "fetch", "origin", "skyscanner-contrib/master:skyscanner-contrib/master")
-		mock.ExpectCommand("git", "merge-base", fixBranch, "v2.14.9").WithOutput("abcdef123456")
+		mock.ExpectCommand("git", "merge-base", fixBranch, "skyscanner-internal/develop/v2.14.9").WithOutput("abcdef123456")
 		mock.ExpectCommand("git", "checkout", "skyscanner-contrib/master")
 		mock.SetBranchExists(proposalFull, false)
 		mock.ExpectCommand("git", "checkout", "-b", proposalFull)
@@ -303,7 +303,7 @@ func TestPromoteFixCmd(t *testing.T) {
 
 		mock.SetBranchUpToDate("skyscanner-contrib/master", true)
 		mock.ExpectCommand("git", "fetch", "origin", "skyscanner-contrib/master:skyscanner-contrib/master")
-		mock.ExpectCommand("git", "merge-base", fixBranch, "v2.14.9").WithOutput("abcdef123456")
+		mock.ExpectCommand("git", "merge-base", fixBranch, "skyscanner-internal/develop/v2.14.9").WithOutput("abcdef123456")
 		mock.ExpectCommand("git", "checkout", "skyscanner-contrib/master")
 		mock.ExpectCommand("git", "checkout", "-b", proposalFull)
 		mock.ExpectCommand("git", "cherry-pick", "--keep-redundant-commits", "abcdef123456.."+fixBranch).WithError(errors.New("conflict"))

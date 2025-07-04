@@ -314,7 +314,7 @@ func promoteFixCmd(args []string, runner CommandRunner) int {
 		return 1
 	}
 
-	baseRelease := parts[2] // e.g. v2.9.14
+	baseRelease := strings.Join(parts[:3], "/") // e.g. skyscanner-internal/develop/v2.9.14
 
 	// 3) Compute merge-base & commit-range
 	gb := strings.TrimSpace(runner.RunAndCaptureOrExit("git", "merge-base", *fixBranch, baseRelease))
