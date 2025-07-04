@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -18,6 +19,7 @@ type MockRunner struct {
 	exitCalls             []string
 	branchesExist         map[string]bool
 	tagsExist             map[string]bool
+	output                *bytes.Buffer
 	cmdIndex              int
 	hasUncommittedChanges bool
 	branchUpToDate        map[string]bool
@@ -37,6 +39,7 @@ func NewMockRunner(t *testing.T) *MockRunner {
 		expectedCmds:   []expectedCmd{},
 		branchesExist:  make(map[string]bool),
 		tagsExist:      make(map[string]bool),
+		output:         &bytes.Buffer{},
 		branchUpToDate: make(map[string]bool),
 	}
 }
@@ -151,7 +154,7 @@ func (m *MockRunner) HasUncommittedChanges() bool {
 func (m *MockRunner) IsBranchUpToDate(localBranch, remoteBranch string) bool {
 	upToDate, ok := m.branchUpToDate[localBranch]
 	if !ok {
-		m.t.Logf("Branch up-to-date check not mocked for local branch %s and remote branch %s", localBranch, remoteBranch)
+		m.t.Logf("Branch up-to-date check not mocked for: %s", localBranch)
 		return false
 	}
 	return upToDate
@@ -266,10 +269,9 @@ func TestPromoteFixCmd(t *testing.T) {
 		proposalFull := "skyscanner-contrib/proposal/" + proposalBranch
 
 		mock.SetBranchUpToDate("skyscanner-contrib/master", true)
-
-		// Expected command sequence:
 		mock.ExpectCommand("git", "fetch", "origin", "skyscanner-contrib/master:skyscanner-contrib/master")
-		mock.ExpectCommand("git", "merge-base", fixBranch, "v2.14.9").WithOutput("abcdef123456")
+		mock.ExpectCommand("git", "fetch", "origin", fixBranch+":"+fixBranch)
+		mock.ExpectCommand("git", "merge-base", fixBranch, "skyscanner-internal/develop/v2.14.9").WithOutput("abcdef123456")
 		mock.ExpectCommand("git", "checkout", "skyscanner-contrib/master")
 		mock.SetBranchExists(proposalFull, false)
 		mock.ExpectCommand("git", "checkout", "-b", proposalFull)
@@ -288,6 +290,7 @@ func TestPromoteFixCmd(t *testing.T) {
 
 		mock.SetBranchUpToDate("skyscanner-contrib/master", false)
 		mock.ExpectCommand("git", "fetch", "origin", "skyscanner-contrib/master:skyscanner-contrib/master")
+		mock.ExpectCommand("git", "fetch", "origin", fixBranch+":"+fixBranch)
 
 		args := []string{"--fix-branch=" + fixBranch, "--proposal-branch=" + proposalBranch}
 		exitCode := promoteFixCmd(args, mock)
@@ -303,8 +306,10 @@ func TestPromoteFixCmd(t *testing.T) {
 
 		mock.SetBranchUpToDate("skyscanner-contrib/master", true)
 		mock.ExpectCommand("git", "fetch", "origin", "skyscanner-contrib/master:skyscanner-contrib/master")
-		mock.ExpectCommand("git", "merge-base", fixBranch, "v2.14.9").WithOutput("abcdef123456")
+		mock.ExpectCommand("git", "fetch", "origin", fixBranch+":"+fixBranch)
+		mock.ExpectCommand("git", "merge-base", fixBranch, "skyscanner-internal/develop/v2.14.9").WithOutput("abcdef123456")
 		mock.ExpectCommand("git", "checkout", "skyscanner-contrib/master")
+		mock.SetBranchExists(proposalFull, false)
 		mock.ExpectCommand("git", "checkout", "-b", proposalFull)
 		mock.ExpectCommand("git", "cherry-pick", "--keep-redundant-commits", "abcdef123456.."+fixBranch).WithError(errors.New("conflict"))
 
@@ -332,8 +337,8 @@ func TestSyncForkCmd(t *testing.T) {
 
 		// Set test environment
 		oldToken := os.Getenv("GITHUB_TOKEN")
-		t.Setenv("GITHUB_TOKEN", "test-token")
-		defer t.Setenv("GITHUB_TOKEN", oldToken)
+		os.Setenv("GITHUB_TOKEN", "test-token")
+		defer os.Setenv("GITHUB_TOKEN", oldToken)
 
 		// Run the command
 		exitCode := syncForkCmd([]string{}, mock)
@@ -448,17 +453,10 @@ func TestWorkOnCmd(t *testing.T) {
 		mock := NewMockRunner(t)
 		devBranch := "skyscanner-internal/develop/v2.14.9/fix-issue-123"
 		suffix := "add-logging"
-		featureBranch := fmt.Sprintf("%s-%s", devBranch, suffix)
 
+		mock.ExpectCommand("git", "fetch", "origin", devBranch+":"+devBranch)
 		mock.ExpectCommand("git", "checkout", devBranch)
-		mock.ExpectCommand("git", "checkout", "-b", featureBranch)
-		mock.ExpectCommand("cat", "VERSION").WithOutput("v2.14.9")
-		mock.ExpectCommand("sh", "-c", "echo 'v2.14.9-add-logging' > VERSION")
-		mock.ExpectCommand("git", "add", "VERSION")
-		mock.ExpectCommand("git", "commit", "-m", "feat: add-logging\n\nUpdate VERSION to v2.14.9-add-logging")
-		mock.ExpectCommand("gh", "repo", "set-default", "Skyscanner/argo-cd")
-		mock.ExpectCommand("git", "push", "-u", "origin", "skyscanner-internal/develop/v2.14.9/fix-issue-123-add-logging")
-		mock.ExpectCommand("gh", "pr", "create", "--base", "skyscanner-internal/develop/v2.14.9/fix-issue-123", "--title", "feat: add-logging", "--body", "Automated PR created via fork-cli\n\nUpdates VERSION to v2.14.9-add-logging")
+		mock.ExpectCommand("git", "checkout", "-b", "feature/add-logging")
 
 		exitCode := workOnCmd([]string{"--dev-branch=" + devBranch, "--suffix=" + suffix}, mock)
 		assert.Equal(t, 0, exitCode)

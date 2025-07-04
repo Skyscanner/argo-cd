@@ -514,8 +514,8 @@ func workOnCmd(args []string, runner CommandRunner) int {
 	runner.RunOrExit("git", "push", "-u", "origin", featureBranch)
 
 	// Create PR automatically
-	title := "feat: " + *suffix
-	body := "Automated PR created via fork-cli\n\nUpdates VERSION to " + newVersion
+	title := fmt.Sprintf("feat: %s", *suffix)
+	body := fmt.Sprintf("Automated PR created via fork-cli\n\nUpdates VERSION to %s", newVersion)
 	runner.RunOrExit("gh", "pr", "create", "--base", *devBranch, "--title", title, "--body", body)
 
 	fmt.Println("✅ PR created successfully!")
@@ -528,7 +528,7 @@ func workOnCmd(args []string, runner CommandRunner) int {
 }
 
 func printConflictMessage(w io.Writer, releaseTag, fixBranch, proposal string) {
-	cmd := fmt.Sprintf("go run tools/fork-cli/main.go promote-fix --fix-branch=%q --proposal-branch=%q",
+	cmd := fmt.Sprintf("go run tools/fork-cli/main.go promote-fix --fix-branch=\"%s\" --proposal-branch=\"%s\"",
 		fixBranch, proposal)
 	fmt.Fprintf(w, "\n❌ Conflict detected during promotion of release %s.\n", releaseTag)
 	fmt.Fprintln(w, "Please re-run this command locally to resolve interactively:")
