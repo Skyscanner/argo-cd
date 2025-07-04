@@ -77,6 +77,8 @@ Our fork maintains several important branches:
 
 3. **Make changes and create PRs**:
    - Make changes, commit, and push your feature branch
+      - run `make pre-commit-local` to run pre commit checks (it's slow)
+      - make sure **all** commit messages follow the pattern `^(feat|fix|docs|test|ci|chore)!?(\\(.*\\))?!?:.*`
    - Create PRs against the development branch (not upstream!)
    - Use the `gh` CLI for convenience:
      ```shell
