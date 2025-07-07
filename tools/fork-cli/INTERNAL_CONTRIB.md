@@ -40,7 +40,7 @@ Our fork maintains several important branches:
    # If you have changes:
    git stash push -m "WIP before sync"
    # or
-   git add . && git commit -m "WIP: save local changes"
+   git add . && git commit -m "chore(WIP): save local changes"
    ```
 
 2. **Sync our fork with upstream**:
@@ -77,6 +77,9 @@ Our fork maintains several important branches:
 
 3. **Make changes and create PRs**:
    - Make changes, commit, and push your feature branch
+      - Skim through argocd [contribution guide](https://argo-cd.readthedocs.io/en/latest/developer-guide/code-contributions/)
+      - run `make pre-commit-local` to run pre commit checks (it's slow)
+      - make sure **all** commit messages follow the pattern `^(feat|fix|docs|test|ci|chore)!?(\\(.*\\))?!?:.*`
    - Create PRs against the development branch (not upstream!)
    - Use the `gh` CLI for convenience:
      ```shell

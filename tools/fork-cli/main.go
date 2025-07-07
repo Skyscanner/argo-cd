@@ -314,7 +314,7 @@ func promoteFixCmd(args []string, runner CommandRunner) int {
 		return 1
 	}
 
-	baseRelease := parts[2] // e.g. v2.9.14
+	baseRelease := strings.Join(parts[:3], "/") // e.g. skyscanner-internal/develop/v2.9.14
 
 	// 3) Compute merge-base & commit-range
 	gb := strings.TrimSpace(runner.RunAndCaptureOrExit("git", "merge-base", *fixBranch, baseRelease))
@@ -514,8 +514,8 @@ func workOnCmd(args []string, runner CommandRunner) int {
 	runner.RunOrExit("git", "push", "-u", "origin", featureBranch)
 
 	// Create PR automatically
-	title := fmt.Sprintf("feat: %s", *suffix)
-	body := fmt.Sprintf("Automated PR created via fork-cli\n\nUpdates VERSION to %s", newVersion)
+	title := "feat: " + *suffix
+	body := "Automated PR created via fork-cli\n\nUpdates VERSION to " + newVersion
 	runner.RunOrExit("gh", "pr", "create", "--base", *devBranch, "--title", title, "--body", body)
 
 	fmt.Println("✅ PR created successfully!")
@@ -528,7 +528,7 @@ func workOnCmd(args []string, runner CommandRunner) int {
 }
 
 func printConflictMessage(w io.Writer, releaseTag, fixBranch, proposal string) {
-	cmd := fmt.Sprintf("go run tools/fork-cli/main.go promote-fix --fix-branch=\"%s\" --proposal-branch=\"%s\"",
+	cmd := fmt.Sprintf("go run tools/fork-cli/main.go promote-fix --fix-branch=%q --proposal-branch=%q",
 		fixBranch, proposal)
 	fmt.Fprintf(w, "\n❌ Conflict detected during promotion of release %s.\n", releaseTag)
 	fmt.Fprintln(w, "Please re-run this command locally to resolve interactively:")
