@@ -40,7 +40,7 @@ Our fork maintains several important branches:
    # If you have changes:
    git stash push -m "WIP before sync"
    # or
-   git add . && git commit -m "WIP: save local changes"
+   git add . && git commit -m "(chore(WIP): save local changes"
    ```
 
 2. **Sync our fork with upstream**:
