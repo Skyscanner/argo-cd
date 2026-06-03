@@ -31,12 +31,12 @@ updates:
     groups:
       skyscanner-internal:
         patterns:
-          - "*/skyscanner/*"
+          - "skyscanner/*"
       external-dependencies:
         patterns:
           - "*"
         exclude-patterns:
-          - "*/skyscanner/*"
+          - "skyscanner/*"
 
   - package-ecosystem: "gomod"
     directories:
